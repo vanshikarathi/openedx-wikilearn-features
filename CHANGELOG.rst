@@ -14,7 +14,10 @@ Change Log
 Unreleased
 **********
 
-*
+Fixed
+=====
+
+* Fix meta translations log messages that dropped or printed the wrong value.
 
 1.0.1 – 2026-07-07
 **********************************************
