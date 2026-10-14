@@ -1,5 +1,4 @@
 import copy
-import html
 import logging
 import operator
 from datetime import datetime, timedelta
@@ -39,6 +38,7 @@ from openedx_wikilearn_features.wikimedia_general.djangoapps_patches.contentstor
 from openedx_wikilearn_features.wikimedia_general.djangoapps_patches.instructor_task.patches import (
     EnhancedSubtaskStatus,
 )
+from openedx_wikilearn_features.wikimedia_general.mentions import extract_mentioned_usernames
 from openedx_wikilearn_features.wikimedia_general.models import Topic
 
 log = logging.getLogger(__name__)
@@ -133,26 +133,16 @@ def get_course_users_with_preference(post_id):
 
 
 def get_mentioned_users_list(input_string, users_list=None):
-    input_string = html.unescape(input_string)
     if not users_list:
         users_list = []
 
-    start_index = input_string.find("@")
-    if start_index == -1:
-        return users_list
-    else:
-        end_index = input_string[start_index:].find(" ")
-        name = input_string[start_index:][:end_index]
-
+    for username in extract_mentioned_usernames(input_string):
         try:
-            user = User.objects.get(username=name[1:])  # remove @ from name
-            users_list.append(user)
+            users_list.append(User.objects.get(username=username))
         except User.DoesNotExist:
-            log.error("Unable to find mentioned thread user with name: {}".format(name))
+            log.error("Unable to find mentioned thread user with name: @%s", username)
 
-        # remove tagged name from string and search for next tagged name
-        remianing_string = input_string.replace(name, "")
-        return get_mentioned_users_list(remianing_string, users_list)
+    return users_list
 
 
 def get_user_enrollments_course_keys(user):
