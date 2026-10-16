@@ -132,6 +132,27 @@ def get_course_users_with_preference(post_id):
     return users_list
 
 
+def get_course_members(course_key):
+    """
+    Return the active users who have an active enrollment in the course or are on its course team.
+    """
+    return User.objects.filter(
+        Q(courseenrollment__course_id=course_key, courseenrollment__is_active=True)
+        | Q(
+            courseaccessrole__course_id=course_key,
+            courseaccessrole__role__in=[CourseStaffRole.ROLE, CourseInstructorRole.ROLE],
+        ),
+        is_active=True,
+    ).distinct()
+
+
+def is_course_member(user, course_key):
+    """
+    Return whether the user has an active enrollment in the course or is on its course team.
+    """
+    return get_course_members(course_key).filter(pk=user.pk).exists()
+
+
 def get_mentioned_users_list(input_string, users_list=None):
     if not users_list:
         users_list = []
