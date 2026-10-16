@@ -193,7 +193,7 @@ def all_courses_enrollment_report(request):
     """
     Handles request to generate CSV of stats of all courses enrollments
     """
-    report_type = _("all_enrollments_stats")
+    report_type = "all_enrollments_stats"
 
     success_status = SUCCESS_MESSAGE_TEMPLATE.format(report_type="All Courses enrollment Report")
     query_features = [
@@ -222,7 +222,7 @@ def courses_enrollment_report(request):
     """
     Handles request to generate CSV of stats of all courses enrollments.
     """
-    report_type = _("enrollment")
+    report_type = "enrollment"
 
     success_status = SUCCESS_MESSAGE_TEMPLATE.format(report_type="Courses enrollment Report")
     query_features = [
@@ -250,7 +250,7 @@ def user_pref_lang_report(request):
     """
     Handles request to generate CSV of users preferred language.
     """
-    report_type = _("user_pref_lang")
+    report_type = "user_pref_lang"
     success_status = SUCCESS_MESSAGE_TEMPLATE.format(report_type="Users Preferred Language Report")
     task_input = {
         "features": ["username", "dark_lang", "pref_lang"],
@@ -269,7 +269,7 @@ def users_enrollment_report(request):
     """
     Handles request to generate CSV of all users enrollments info.
     """
-    report_type = _("all_users_enrollment")
+    report_type = "all_users_enrollment"
     success_status = SUCCESS_MESSAGE_TEMPLATE.format(report_type="Users Enrollments Report")
     task_input = {
         "features": ["username", "enrollments_count", "completions_count"],
@@ -296,7 +296,7 @@ def enrollment_activity_report(request):
     Handles request to generate CSV of all users enrollments detailed info. This report has a separate row
     for each enrollment.
     """
-    report_type = _("enrollment_acctivity_report")
+    report_type = "enrollment_activity_report"
     success_status = SUCCESS_MESSAGE_TEMPLATE.format(report_type="User Enrollments Expanded Report")
     task_input = {
         "features": ["username", "course_title", "enrollment_date", "completion_date"],

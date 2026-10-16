@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import gettext as _
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 
 from openedx_wikilearn_features.admin_dashboard.admin_task.api import (
@@ -37,7 +36,7 @@ class EnrollmentActivityReportViewTest(TestCase):
         # Verify that submit_task is called with expected arguments
         mock_submit_task.assert_called_once_with(
             response.wsgi_request,
-            _("enrollment_acctivity_report"),
+            "enrollment_activity_report",
             task_enrollment_activity_report,
             "all_courses",
             {
@@ -47,7 +46,7 @@ class EnrollmentActivityReportViewTest(TestCase):
                     "enrollment_date",
                     "completion_date",
                 ],
-                "csv_type": _("enrollment_acctivity_report"),
+                "csv_type": "enrollment_activity_report",
             },
             "",
         )
