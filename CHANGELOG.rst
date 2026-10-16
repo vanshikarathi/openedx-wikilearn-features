@@ -17,6 +17,11 @@ Unreleased
 Fixed
 =====
 
+* Fix meta translations log messages that dropped or printed the wrong value.
+
+Fixed
+===== 
+
 * Count a course as completed when the learner passed it, not only when their
   letter grade is "Pass", so courses with custom grade cutoffs are counted.
 
