@@ -14,6 +14,7 @@ from openedx.core.djangoapps.content.course_overviews.tests.factories import Cou
 
 from openedx_wikilearn_features.wikimedia_general.utils import (
     get_course_members,
+    get_mentioned_users_list,
     is_course_completed,
     is_course_member,
 )
@@ -64,6 +65,21 @@ class CourseMembersTest(TestCase):
         self.assertFalse(is_course_member(self.unenrolled, self.course.id))
         self.assertFalse(is_course_member(self.other_course_learner, self.course.id))
         self.assertFalse(is_course_member(self.beta_tester, self.course.id))
+
+    def test_get_mentioned_users_list_only_returns_course_members(self):
+        def mention(username):
+            return f'<span class="wikilearn-mention" data-username="{username}">@{username}</span>'
+
+        post_body = "<p>{} {} {} @{}</p>".format(
+            mention("Jane Doe"),
+            mention(self.other_course_learner.username),
+            mention("nobody"),
+            self.staff.username,  # plain text, not a mention
+        )
+        self.assertEqual(get_mentioned_users_list(post_body, self.course.id), [self.learner])
+
+    def test_get_mentioned_users_list_without_mentions(self):
+        self.assertEqual(get_mentioned_users_list("<p>no mentions</p>", self.course.id), [])
 
 
 @patch(f"{UTILS}.CourseGradeFactory")

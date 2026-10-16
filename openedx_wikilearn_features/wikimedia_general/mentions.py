@@ -1,23 +1,32 @@
 """
-Helpers for finding @username mentions in discussion posts.
-
-Kept free of LMS imports so it can be unit tested on its own.
+Helpers for finding @mentions inserted by the mention plugin in discussion posts.
 """
-import html
-import re
+from html.parser import HTMLParser
 
-# A username ends at whitespace (including the non-breaking space the mention
-# plugin inserts after a username), at '@', at HTML brackets, or at punctuation.
-MENTION_RE = re.compile(r"@([^\s@<>,;:!?()\[\]{}\"'/\\]+)")
+MENTION_CLASS = "wikilearn-mention"
 
 
-def extract_mentioned_usernames(text):
+class _MentionParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.usernames = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag != "span":
+            return
+        attrs = dict(attrs)
+        if MENTION_CLASS not in (attrs.get("class") or "").split():
+            return
+        username = attrs.get("data-username")
+        if username and username not in self.usernames:
+            self.usernames.append(username)
+
+
+def extract_mentioned_usernames(html):
     """
-    Return the unique usernames mentioned in ``text``, in order of appearance.
+    Return the unique usernames of the mention spans in ``html``, in order of appearance.
     """
-    usernames = []
-    for match in MENTION_RE.findall(html.unescape(text)):
-        username = match.rstrip(".")
-        if username and username not in usernames:
-            usernames.append(username)
-    return usernames
+    parser = _MentionParser()
+    parser.feed(html or "")
+    parser.close()
+    return parser.usernames

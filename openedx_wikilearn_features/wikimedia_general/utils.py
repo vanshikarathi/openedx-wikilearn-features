@@ -153,17 +153,21 @@ def is_course_member(user, course_key):
     return get_course_members(course_key).filter(pk=user.pk).exists()
 
 
-def get_mentioned_users_list(input_string, users_list=None):
-    if not users_list:
-        users_list = []
+def get_mentioned_users_list(post_body, course_key):
+    """
+    Return the course members mentioned in the post body. Mentions of anyone else are ignored.
+    """
+    usernames = extract_mentioned_usernames(post_body)
+    if not usernames:
+        return []
 
-    for username in extract_mentioned_usernames(input_string):
-        try:
-            users_list.append(User.objects.get(username=username))
-        except User.DoesNotExist:
-            log.error("Unable to find mentioned thread user with name: @%s", username)
+    users = list(get_course_members(course_key).filter(username__in=usernames))
+    found = {user.username for user in users}
+    for username in usernames:
+        if username not in found:
+            log.info("Not notifying mentioned user @%s: not a member of course %s", username, course_key)
 
-    return users_list
+    return users
 
 
 def get_user_enrollments_course_keys(user):

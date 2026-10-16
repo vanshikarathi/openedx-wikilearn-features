@@ -7,31 +7,32 @@ import pytest
 from openedx_wikilearn_features.wikimedia_general.mentions import extract_mentioned_usernames
 
 
+def mention(username_attr, text=None):
+    return (
+        f'<span class="wikilearn-mention" data-username="{username_attr}" contenteditable="false">'
+        f"@{text or username_attr}</span>&nbsp;"
+    )
+
+
 @pytest.mark.parametrize(
-    "text, expected",
+    "html, expected",
     [
-        # The mention plugin inserts "@username&nbsp;"
-        ("<p>@Alice&nbsp;thanks for the help</p>", ["Alice"]),
-        ("<p>Hi @Alice&nbsp;and @Bob&nbsp;see this</p>", ["Alice", "Bob"]),
-        ("<p>thanks @Alice&nbsp;</p>", ["Alice"]),
-        # Plain text and punctuation
-        ("hello @Alice thanks", ["Alice"]),
-        ("@Alice", ["Alice"]),
-        ("hi @Alice, see this", ["Alice"]),
-        ("great work @Alice.", ["Alice"]),
-        ("@Alice\nnext line", ["Alice"]),
-        # HTML around the mention
-        ("<p>@Alice</p>", ["Alice"]),
-        # Usernames with dots, dashes and underscores
-        ("@john.doe @jane_doe @a-b", ["john.doe", "jane_doe", "a-b"]),
-        # Duplicates are returned once, in order
-        ("@Alice @Bob @Alice", ["Alice", "Bob"]),
-        # No mentions
-        ("no mentions here", []),
-        ("email me at x@", []),
-        ("@ alone", []),
+        (f"<p>Hi {mention('Alice')}thanks</p>", ["Alice"]),
+        (f"<p>{mention('Jane Doe')}and {mention('O&#39;Brien (WMF)')}</p>", ["Jane Doe", "O'Brien (WMF)"]),
+        (f"<p>{mention('Tom &amp; &quot;Jerry&quot;')}</p>", ['Tom & "Jerry"']),
+        (f"<p>{mention('Alice')}</p>", ["Alice"]),
+        (f"<p>{mention('Alice')}{mention('Bob')}{mention('Alice')}</p>", ["Alice", "Bob"]),
+        ('<span class="foo wikilearn-mention" data-username="Alice">@Alice</span>', ["Alice"]),
+        # Plain-text @mentions are not notified
+        ("<p>hello @Alice thanks</p>", []),
+        ("@Jane Doe", []),
+        ('<span class="other" data-username="Alice">@Alice</span>', []),
+        ('<span class="wikilearn-mention">@Alice</span>', []),
+        ('<span class="wikilearn-mention" data-username="">@</span>', []),
+        ('<div class="wikilearn-mention" data-username="Alice">@Alice</div>', []),
         ("", []),
+        (None, []),
     ],
 )
-def test_extract_mentioned_usernames(text, expected):
-    assert extract_mentioned_usernames(text) == expected
+def test_extract_mentioned_usernames(html, expected):
+    assert extract_mentioned_usernames(html) == expected
