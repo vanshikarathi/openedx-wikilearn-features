@@ -167,7 +167,7 @@ class MentionUsersView(generics.GenericAPIView):
             .filter(username__icontains=search)
             .exclude(pk=request.user.pk)
             .order_by("username")
-            .values_list("username", flat=True)
+            .values_list("username", flat=True)[:10]
         )
         return Response(
             {"results": [{"username": username} for username in usernames]},

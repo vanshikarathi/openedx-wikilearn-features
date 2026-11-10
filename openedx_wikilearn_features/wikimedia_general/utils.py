@@ -136,14 +136,13 @@ def get_course_members(course_key):
     """
     Return the active users who have an active enrollment in the course or are on its course team.
     """
-    return User.objects.filter(
-        Q(courseenrollment__course_id=course_key, courseenrollment__is_active=True)
-        | Q(
-            courseaccessrole__course_id=course_key,
-            courseaccessrole__role__in=[CourseStaffRole.ROLE, CourseInstructorRole.ROLE],
-        ),
-        is_active=True,
-    ).distinct()
+    CourseEnrollment = apps.get_model('student', 'CourseEnrollment')
+    CourseAccessRole = apps.get_model('student', 'CourseAccessRole')
+    enrolled = CourseEnrollment.objects.filter(course_id=course_key, is_active=True).values("user_id")
+    course_team = CourseAccessRole.objects.filter(
+        course_id=course_key, role__in=[CourseStaffRole.ROLE, CourseInstructorRole.ROLE]
+    ).values("user_id")
+    return User.objects.filter(Q(id__in=enrolled) | Q(id__in=course_team), is_active=True)
 
 
 def is_course_member(user, course_key):

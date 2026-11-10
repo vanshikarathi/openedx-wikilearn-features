@@ -47,6 +47,13 @@ class MentionUsersViewTest(TestCase):
         response = self.client.get(URL, {"search": "doe"})
         self.assertEqual(self._usernames(response), ["Jane Doe"])
 
+    def test_results_are_limited_to_ten(self):
+        for i in range(12):
+            user = UserFactory(username=f"Jane Extra {i:02d}")
+            CourseEnrollmentFactory(user=user, course=self.course, is_active=True)
+        response = self.client.get(URL, {"search": "jane"})
+        self.assertEqual(len(self._usernames(response)), 10)
+
     def test_empty_search_returns_no_results(self):
         response = self.client.get(URL)
         self.assertEqual(response.status_code, 200)
@@ -67,6 +74,12 @@ class MentionUsersViewTest(TestCase):
         response = self.client.get(URL, {"search": "jane"})
         self.assertIn(response.status_code, (401, 403))
 
+    def test_course_id_containing_topics_is_not_routed_to_create_topic(self):
+        course_id = "course-v1:WMF+topics101+2026"
+        response = self.client.get(f"/wikimedia_general/api/v0/mention_users/{course_id}/", {"search": "jane"})
+        self.assertEqual(response.status_code, 403)
+
     def test_unknown_course_returns_no_access(self):
-        response = self.client.get("/wikimedia_general/api/v0/mention_users/course-v1:No+Such+Course/", {"search": "jane"})
+        url = "/wikimedia_general/api/v0/mention_users/course-v1:No+Such+Course/"
+        response = self.client.get(url, {"search": "jane"})
         self.assertEqual(response.status_code, 403)

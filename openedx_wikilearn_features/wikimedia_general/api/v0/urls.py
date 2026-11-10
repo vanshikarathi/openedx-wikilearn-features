@@ -37,7 +37,7 @@ urlpatterns = [
         RetrieveWikiMetaData.as_view(),
         name="course_font",
     ),
-    re_path(r"topics", create_topic, name="create_topic"),
+    re_path(r"^topics/?$", create_topic, name="create_topic"),
     re_path(
         rf"^mention_users/{settings.COURSE_KEY_PATTERN}/$",
         MentionUsersView.as_view(),
